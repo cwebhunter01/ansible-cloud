@@ -1,2 +1,4 @@
-108.130.151.152
-3.249.64.54
+[all]
+server1 ansible_host=3.249.64.54 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/ansible
+server2 ansible_host=108.130.151.152 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/ansible
+
