@@ -4,24 +4,13 @@
   become: true
   tasks:
 
-  - name: install Nginx
-    apt:
-      name: nginx
-    when: ansible_distribution in ["Ubuntu"]
-
-  - name: Install Apache2
-    apt:
-      name: apache2
+  - name: Install Apache2, Nginx, php package and also update cache
+    package:
+      name:
+        - "{{ apache_package }}"
+        - "{{ php_package}}"
+        - "{{ nginx_package }}"
       state: latest
+      update_cache: yes
     when: ansible_distribution in ["Ubuntu"]
 
-  - name: add php support for apache
-    apt:
-      name: libapache2-mod-php
-      state: latest
-    when: ansible_distribution in ["Ubuntu"]
-
-  - name: update repository index
-    apt:
-     update_cache: yes
-    when: ansible_distribution in ["Ubuntu"]
