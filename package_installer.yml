@@ -5,6 +5,7 @@
   tasks:
 
   - name: Install Apache2, Nginx, php package and also update cache
+    tags: always
     package:
       name:
         - "{{ apache_package }}"
@@ -12,5 +13,4 @@
         - "{{ nginx_package }}"
       state: latest
       update_cache: yes
-    when: ansible_distribution in ["Ubuntu"]
-
+    when: ansible_distribution == "Ubuntu"
