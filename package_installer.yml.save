@@ -1,0 +1,61 @@
+---
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: Install Apache2, Nginx, php package and also update cache
+    tags: always
+    package:
+      name:
+        - "{{ apache_package }}"
+        - "{{ php_package}}"
+        - "{{ nginx_package }}"
+      state: latest
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+ - hosts: all
+   become: true
+   tasks:
+
+
+  - name: create new user and add to a specific group
+    tags: always
+    user:
+      name: ansible-cloud-user
+      groups: root
+
+  - name: add ssh key for user
+    tags: always
+    authorized_keys:
+      user: ansible-cloud-user
+      key: ""
+
+
+  - name: copy default html file for site
+    tags: apache2,apache,httpd
+    copy:
+      src: default_site.html
+      dest: /var/www/html/index.html
+      owner: root
+      group: root
+      mode: 0644
+
+  - hosts: all
+    become: true
+    task:
+
+    - name: install unzip
+      package:
+        name: unzip
+
+   - name: install terraform
+     unarchive:
+       src: https://releases.hashicorp.com/terraform/1.12.2/terraform_1.12.2_windows_386.zip
+       dest: /usr/local/bin
+       remote_src: yes
+       mode: 0755
+       owner: root
+       group: root
+

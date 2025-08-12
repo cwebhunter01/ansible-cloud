@@ -1,5 +1,0 @@
-- hosts: myservers
-  gather_facts: no
-  tasks:
-    - name: Install Python
-      raw: sudo apt update && sudo apt install -y python3

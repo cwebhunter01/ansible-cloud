@@ -1,45 +1,62 @@
 ---
-
-- hosts: all
+- name: Install web packages and copy default site
+  hosts: all
   become: true
   tasks:
 
-  - name: Install Apache2, Nginx, php package and also update cache
-    tags: always
-    package:
-      name:
-        - "{{ apache_package }}"
-        - "{{ php_package}}"
-        - "{{ nginx_package }}"
-      state: latest
-      update_cache: yes
-    when: ansible_distribution == "Ubuntu"
-
-
-
-  - name: copy default html file for site
-    tags: apache2,apache,httpd
-    copy:
-      src: default_site.html
-      dest: /var/www/html/index.html
-      owner: root
-      group: root
-      mode: 0644
-
-  - hosts: workstations
-    become: true
-    task:
-
-    - name: install unzip
+    - name: Install Apache2, Nginx, and PHP packages
+      tags: always
       package:
-        name: unzip
+        name:
+          - "{{ apache_package }}"
+          - "{{ php_package }}"
+          - "{{ nginx_package }}"
+        state: latest
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
 
-   - name: install terraform
-     unarchive:
-       src: https://releases.hashicorp.com/terraform/1.12.2/terraform_1.12.2_windows_386.zip
-       dest: /usr/local/bin
-       remote_src: yes
-       mode: 0755
-       owner: root
-       group: root
+    - name: Copy default HTML file for site
+      tags: apache2,apache,httpd
+      copy:
+        src: default_site.html
+        dest: /var/www/html/index.html
+        owner: root
+        group: root
+        mode: '0644'
 
+
+    - name: Download Terraform binary
+      get_url:
+        url: "https://releases.hashicorp.com/terraform/1.12.2/terraform_1.12.2_linux_amd64.zip"
+        dest: /tmp/terraform.zip
+        mode: '0644'
+
+    - name: Unzip Terraform binary
+      unarchive:
+        src: /tmp/terraform.zip
+        dest: /usr/local/bin
+        remote_src: yes
+        mode: '0755'
+        owner: root
+        group: root
+
+    - name: Create ansible-cloud-user
+      tags: always
+      user:
+        name: ansible-cloud-user
+        group: root
+        shell: /bin/bash
+
+    - name: Add SSH public key for ansible-cloud-user
+      ansible.posix.authorized_key:
+        user: ansible-cloud-user
+        state: present
+        key: "{{ lookup('file', 'files/ansible-cloud-user.pub') }}"
+
+    - name: Add sudoers file for ansible-cloud-user
+      copy:
+        src: sudoer_ansible-cloud-user
+        dest: /etc/sudoers.d/ansible-cloud-user
+        owner: root
+        group: root
+        mode: '0440'
